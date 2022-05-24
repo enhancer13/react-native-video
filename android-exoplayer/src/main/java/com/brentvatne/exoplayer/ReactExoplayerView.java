@@ -183,10 +183,10 @@ class ReactExoplayerView extends FrameLayout implements
             }
         }
     };
-    
+
     public double getPositionInFirstPeriodMsForCurrentWindow(long currentPosition) {
         Timeline.Window window = new Timeline.Window();
-        if(!player.getCurrentTimeline().isEmpty()) {    
+        if(!player.getCurrentTimeline().isEmpty()) {
             player.getCurrentTimeline().getWindow(player.getCurrentWindowIndex(), window);
         }
         return window.windowStartTimeMs + currentPosition;
@@ -411,7 +411,7 @@ class ReactExoplayerView extends FrameLayout implements
                             new DefaultRenderersFactory(getContext())
                                     .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF);
                     player = new SimpleExoPlayer.Builder(getContext(), renderersFactory)
-                                .setTrackSelector​(trackSelector)
+                                .setTrackSelector(trackSelector)
                                 .setBandwidthMeter(bandwidthMeter)
                                 .setLoadControl(defaultLoadControl)
                                 .build();
@@ -1233,8 +1233,10 @@ class ReactExoplayerView extends FrameLayout implements
         if (player != null) {
             if (!paused) {
                 startPlayback();
+                eventEmitter.playbackResumed();
             } else {
                 pausePlayback();
+                eventEmitter.playbackStalled();
             }
         }
     }

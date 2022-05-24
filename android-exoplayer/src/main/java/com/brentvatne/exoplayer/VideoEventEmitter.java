@@ -128,7 +128,7 @@ class VideoEventEmitter {
 
     private static final String EVENT_PROP_TIMED_METADATA = "metadata";
 
-    private static final String EVENT_PROP_BITRATE = "bitrate";   
+    private static final String EVENT_PROP_BITRATE = "bitrate";
 
 
     void setViewId(int viewId) {
@@ -187,7 +187,7 @@ class VideoEventEmitter {
         event.putInt(EVENT_PROP_HEIGHT, height);
         event.putString(EVENT_PROP_TRACK_ID, id);
         receiveEvent(EVENT_BANDWIDTH, event);
-    }    
+    }
 
     void seek(long currentPosition, long seekTime) {
         WritableMap event = Arguments.createMap();
@@ -239,6 +239,10 @@ class VideoEventEmitter {
         receiveEvent(EVENT_ERROR, event);
     }
 
+    void playbackStalled() { receiveEvent(EVENT_STALLED, null); }
+
+    void playbackResumed() { receiveEvent(EVENT_RESUME, null); }
+
     void playbackRateChange(float rate) {
         WritableMap map = Arguments.createMap();
         map.putDouble(EVENT_PROP_PLAYBACK_RATE, (double)rate);
@@ -249,7 +253,7 @@ class VideoEventEmitter {
         WritableArray metadataArray = Arguments.createArray();
 
         for (int i = 0; i < metadata.length(); i++) {
-            
+
             Metadata.Entry entry = metadata.get(i);
 
             if (entry instanceof Id3Frame) {
@@ -270,16 +274,16 @@ class VideoEventEmitter {
                 map.putString("value", value);
 
                 metadataArray.pushMap(map);
-                
+
             } else if (entry instanceof EventMessage) {
-                
+
                 EventMessage eventMessage = (EventMessage) entry;
-                
+
                 WritableMap map = Arguments.createMap();
                 map.putString("identifier", eventMessage.schemeIdUri);
                 map.putString("value", eventMessage.value);
                 metadataArray.pushMap(map);
-                
+
             }
         }
 
