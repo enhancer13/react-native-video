@@ -351,6 +351,7 @@ class ReactExoplayerView extends FrameLayout implements
         eventListener = new Player.EventListener() {
             @Override
             public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                eventEmitter.playbackRateChange(playWhenReady && playbackState == Player.STATE_READY ? 1.0f : 0.0f);
                 reLayout(playPauseControlContainer);
                 //Remove this eventListener once its executed. since UI will work fine once after the reLayout is done
                 player.removeListener(eventListener);
