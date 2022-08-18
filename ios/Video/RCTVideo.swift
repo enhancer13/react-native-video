@@ -21,7 +21,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     private var _localSourceEncryptionKeyScheme:String?
     
     /* Required to publish events */
-    private var _eventDispatcher:RCTEventDispatcher?
+    private var _eventDispatcher:RCTEventDispatcherProtocol?
     private var _videoLoadStarted:Bool = false
     
     private var _pendingSeek:Bool = false
@@ -95,7 +95,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
     @objc var onRestoreUserInterfaceForPictureInPictureStop: RCTDirectEventBlock?
     @objc var onGetLicense: RCTDirectEventBlock?
     
-    init(eventDispatcher:RCTEventDispatcher!) {
+    init(eventDispatcher:RCTEventDispatcherProtocol!) {
         super.init(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
         
         _eventDispatcher = eventDispatcher
@@ -227,10 +227,20 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
         RCTVideoUtils.delay()
             .then{ [weak self] in
                 guard let self = self else {throw NSError(domain: "", code: 0, userInfo: nil)}
-                guard let source = self._source,
-                let assetResult = RCTVideoUtils.prepareAsset(source: source),
-                let asset = assetResult.asset,
-                let assetOptions = assetResult.assetOptions else {
+                guard let source = self._source else {
+                    DebugLog("The source not exist")
+                    throw NSError(domain: "", code: 0, userInfo: nil)
+                }
+                if let uri = source.uri, uri.starts(with: "ph://") {
+                    return Promise {
+                        RCTVideoUtils.preparePHAsset(uri: uri).then { asset in
+                            return self.playerItemPrepareText(asset:asset, assetOptions:nil)
+                        }
+                    }
+                }
+                guard let assetResult = RCTVideoUtils.prepareAsset(source: source),
+                      let asset = assetResult.asset,
+                      let assetOptions = assetResult.assetOptions else {
                       DebugLog("Could not find video URL in source '\(self._source)'")
                       throw NSError(domain: "", code: 0, userInfo: nil)
                   }
@@ -1043,6 +1053,7 @@ class RCTVideo: UIView, RCTVideoPlayerViewControllerDelegate, RCTPlayerObserverH
             item.seek(to: CMTime.zero)
             self.applyModifiers()
         } else {
+            self.setPaused(true);
             _playerObserver.removePlayerTimeObserver()
         }
     }
